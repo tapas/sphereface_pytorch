@@ -28,8 +28,14 @@ def dataset_handle(name,filelist,result,callback,bs,pindex,freearr,arrimage,arrl
     imagelist = []
     labellist = []
     pathlist = []
-    nparrimage = np.frombuffer(arrimage.get_obj(),np.float32).reshape(10,len(arrimage)/10)
-    nparrlabel = np.frombuffer(arrlabel.get_obj(),np.float32).reshape(10,len(arrlabel)/10)
+
+    # Below two lines NOT working in python3
+    # nparrimage = np.frombuffer(arrimage.get_obj(),np.float32).reshape(10,len(arrimage)/10)
+    # nparrlabel = np.frombuffer(arrlabel.get_obj(),np.float32).reshape(10,len(arrlabel)/10)
+
+    # Below two lines working in python3
+    nparrimage = np.frombuffer(arrimage.get_obj(), np.float32).reshape(10, int(len(arrimage) / 10))
+    nparrlabel = np.frombuffer(arrlabel.get_obj(), np.float32).reshape(10, int(len(arrlabel) / 10))
     while True:
         filename = filelist.get()
         if filename.endswith('\n'): filename=filename[:-1]
@@ -57,8 +63,14 @@ class ImageDataset(object):
 
         self.arrimage = Array(ctypes.c_float, 10*bs*3*imagesize*imagesize)
         self.arrlabel = Array(ctypes.c_float, 10*bs*3*imagesize*imagesize)
-        self.nparrimage = np.frombuffer(self.arrimage.get_obj(),np.float32).reshape(10,len(self.arrimage)/10)
-        self.nparrlabel = np.frombuffer(self.arrlabel.get_obj(),np.float32).reshape(10,len(self.arrlabel)/10)
+
+        # Below two lines NOT working in python3
+        # self.nparrimage = np.frombuffer(self.arrimage.get_obj(),np.float32).reshape(10,len(self.arrimage)/10)
+        # self.nparrlabel = np.frombuffer(self.arrlabel.get_obj(),np.float32).reshape(10,len(self.arrlabel)/10)
+
+        # Below two lines working in python3
+        self.nparrimage = np.frombuffer(self.arrimage.get_obj(),np.float32).reshape(10,int(len(self.arrimage)/10))
+        self.nparrlabel = np.frombuffer(self.arrlabel.get_obj(),np.float32).reshape(10,int(len(self.arrlabel)/10))
 
         self.filelist = Queue()
         self.result   = Queue()

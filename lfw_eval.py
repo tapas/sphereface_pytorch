@@ -1,3 +1,7 @@
+##################################################################################
+## Run command: python lfw_eval.py --model model/sphere20a_20171020.pth --lfw ~/Downloads/dataset/lfw_for_sphereface.zip
+##################################################################################
+
 from __future__ import print_function
 
 import torch
@@ -34,7 +38,13 @@ def KFold(n=6000, n_folds=10, shuffle=False):
     folds = []
     base = list(range(n))
     for i in range(n_folds):
-        test = base[i*n/n_folds:(i+1)*n/n_folds]
+        # print ("i:{}, n: {}, n_folds: {}, i+1: {}".format(i, n, n_folds, i+1))
+
+        # python 2
+        # test = base[i*n/n_folds:(i+1)*n/n_folds]
+
+        # python 3
+        test = base[int(i*n/n_folds):int((i+1)*n/n_folds)]
         train = list(set(base)-set(test))
         folds.append([train,test])
     return folds
@@ -63,6 +73,8 @@ def find_best_threshold(thresholds, predicts):
 
 
 parser = argparse.ArgumentParser(description='PyTorch sphereface lfw')
+
+# name of network architecture(not file name)
 parser.add_argument('--net','-n', default='sphere20a', type=str)
 parser.add_argument('--lfw', default='../../dataset/face/lfw/lfw.zip', type=str)
 parser.add_argument('--model','-m', default='sphere20a.pth', type=str)
@@ -102,7 +114,8 @@ for i in range(6000):
     img1 = alignment(cv2.imdecode(np.frombuffer(zfile.read(name1),np.uint8),1),landmark[name1])
     img2 = alignment(cv2.imdecode(np.frombuffer(zfile.read(name2),np.uint8),1),landmark[name2])
 
-    imglist = [img1,cv2.flip(img1,1),img2,cv2.flip(img2,1)]
+    # imglist = [img1,cv2.flip(img1,1),img2,cv2.flip(img2,1)]
+    imglist = [img1,img2]
     for i in range(len(imglist)):
         imglist[i] = imglist[i].transpose(2, 0, 1).reshape((1,3,112,96))
         imglist[i] = (imglist[i]-127.5)/128.0
@@ -111,7 +124,8 @@ for i in range(6000):
     img = Variable(torch.from_numpy(img).float(),volatile=True).cuda()
     output = net(img)
     f = output.data
-    f1,f2 = f[0],f[2]
+    # f1,f2 = f[0],f[2]
+    f1,f2 = f[0],f[1]
     cosdistance = f1.dot(f2)/(f1.norm()*f2.norm()+1e-5)
     predicts.append('{}\t{}\t{}\t{}\n'.format(name1,name2,cosdistance,sameflag))
 
@@ -120,7 +134,12 @@ accuracy = []
 thd = []
 folds = KFold(n=6000, n_folds=10, shuffle=False)
 thresholds = np.arange(-1.0, 1.0, 0.005)
-predicts = np.array(map(lambda line:line.strip('\n').split(), predicts))
+
+# Not tested, but I think it works in python 2
+# predicts = np.array(map(lambda line:line.strip('\n').split(), predicts))
+
+# working in python 3
+predicts = np.array(list((map(lambda line:line.strip('\n').split(), predicts))))
 for idx, (train, test) in enumerate(folds):
     best_thresh = find_best_threshold(thresholds, predicts[train])
     accuracy.append(eval_acc(best_thresh, predicts[test]))

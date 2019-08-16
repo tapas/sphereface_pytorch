@@ -4,6 +4,11 @@ The code can be trained on CASIA-Webface and the best accuracy on LFW is **99.22
 
 [SphereFace: Deep Hypersphere Embedding for Face Recognition](https://arxiv.org/abs/1704.08063)
 
+### Prerequisites
+
+The original code was meant for python 2. This is modified to work with python 3
+
+
 # Train
 ```
 python train.py
@@ -32,3 +37,6 @@ python lfw_eval.py --model model/sphere20a_20171020.pth
 
 # References
 [sphereface](https://github.com/wy1iu/sphereface)
+
+## Acknowledgments
+* https://github.com/clcarwin
